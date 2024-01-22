@@ -5,6 +5,7 @@
 # Date: 23 Jannuary 2024
 
 #### Workspace setup ####
+rm(list = ls())
 install.packages("opendatatoronto")
 install.packages("tidyverse")
 install.packages("janitor")
@@ -36,10 +37,21 @@ head(toronto_shelters)
 toronto_shelters_clean <-
   clean_names(toronto_shelters) |>
   mutate(occupancy_date = ymd(occupancy_date)) |> 
-  select(occupancy_date, occupied_beds)
+  select(occupancy_date, 
+         occupied_beds, 
+         capacity_funding_bed, 
+         capacity_funding_room, 
+         unavailable_rooms, 
+         occupied_rooms, 
+         location_city, 
+         sector, 
+         program_model, 
+         overnight_service_type, 
+         program_area, 
+         capacity_type)
 
 head(toronto_shelters_clean)
-
+View(toronto_shelters_clean)
 
 write_csv(
   x = toronto_shelters_clean,

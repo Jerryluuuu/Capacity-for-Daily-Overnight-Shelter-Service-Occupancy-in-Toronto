@@ -1,0 +1,242 @@
+---
+title: "Capacity for Daily Overnight Shelter Service Occupancy in Toronto"
+author: 
+  - Jerry Lu (Yen-Chia Lu)
+thanks: "Code and data are available at: <https://github.com/Jerryluuuu/Capacity-for-Daily-Overnight-Shelter-Service-Occupancy-in-Toronto.git>."
+date: 23 January 2024
+date-format: long
+abstract: "The capacity of Toronto shelter utilization is progressively approaching its maximum, according to OpenDataToronto data collected since 2021. This paper examines the shelter system in Toronto in order to demonstrate to its audience that outcomes vary from city to city. According to usage data, the shelter is segmented into various demographic groups, including men, women, adolescents, families, and mixed adults. This paper will detail the audience's engagement with the Toronto shelter system as a whole. "
+format: pdf
+number-sections: true
+bibliography: references.bib
+---
+
+```{r}
+#| include: false
+#| warning: false
+#| message: false
+#### Workspace steup ####
+install.packages("here")
+install.packages("knitr")
+install.packages("janitor")
+library(tidyverse)
+library(knitr)
+library(janitor)
+library(dplyr)
+library(RColorBrewer)
+#### Explore ####
+toronto_shelters_clean <-
+  read_csv(
+    here::here("outputs folder/data/cleaned_data.csv"),
+    show_col_types = FALSE
+  )
+```
+
+
+# Introduction
+
+Accommodations have always been a problem in cities in today’s society. Especially in Toronto, we can see that the high housing prices and the increasing cost of living have made it impossible for many people to have a place to spend the night. The shelter has become a place for these people to stay. Whether they are homeless or in difficulty, they can have a place to rest. The urban shelters are closely related to weather conditions. When the weather gets cold, the capacity of shelters will become an issue. According to the current situation in Toronto, there are many refugees in need of shelter, but a lot of shelter has reached its limit, so the government needs to consider using more funds to solve the problem. The funding issue and the shelter will definitely make Toronto’s urban pressure even greater.
+
+There are numerous potential applications for shelters. Two situations were identified in the submitted data: one emergency and the other transitional. Based on the 2022 data, it is evident that while emergency forms comprise the majority of utilization situations, the transition is not limited to a small subset of shelter users in Toronto. Additionally, the shelter utilization data is segmented by rooms and beds.  Interestingly, this data set also reveals that individuals who utilise shelters have a variety of options. As 2022 draws to a close, the average monthly volume of individuals seeking shelter will increase. It is possible that the weather in Toronto is the primary cause of the increased utilisation of shelters.
+
+In the data section, it is mostly the process of gathering data, extracting legitimate data, and cleaning it that takes place during the data phase. Learn more about the trends that might be observed in Toronto's shelters by examining the statistics. 
+
+
+# Data {#sec-data}
+
+The dataset was collected by the city of Toronto's OpenDataToronto @opendatatoronto. The data set is called Daily Shelter & Overnight Service Occupancy & Capacity(Data 2022). We analysis the data in R (@citeR), with an additional tools for support my analysis from `tidyverse`[@tidyverse], `knnitr`[@knitr], `here`[@here], `janitor`[@janitor], `dplyr`[@dplyr], `RColorBrewer`[@RColorBrewer], `viridisLite`[@viridisLite], `ggplot2`[@ggplot2], `readr`[@readr], and `tibble`[@tibble]. The further discussion is about the data and the result of the findings. 
+
+# Average usage about the beds and rooms in Toronto's shelters
+
+From the data set and referring to the @tbl-toronto and @tbl-torontoo, we can find out that the data is being collected and has a mean on the daily occupied beds and rooms of shelters in Toronto. Where from the side of the usage of beds in Toronto's shelter, there is a trend that shows when the months are close to the end of the year, the usage of the beds increases from 33 to 38.4, which means that the weather might be the reason cause people needs shelter in Toronto. Besides, the usage of the rooms in the shelter is similar to the beds in the shelter, whereas the peak of the usage happened in October at around 71.5. According to the @fig-toronto and @fig-torontoo can see the trend that shows the occupancy rate of the beds and rooms will be change in different months. 
+```{r}
+#| label: tbl-toronto
+#| tbl-cap: Shelter usage in Toronto in 2022
+#| echo: false
+  clean_names(toronto_shelters_clean) |>
+  mutate(occupancy_month = month(
+    occupancy_date,
+    label = TRUE,
+    abbr = FALSE
+  )) |>
+  arrange(month(occupancy_date)) |> 
+  drop_na(occupied_beds) |>
+  summarise(number_occupied = mean(occupied_beds),
+            .by = occupancy_month) |>
+  kable(
+    col.names = c("Month", "Avg daily occupied beds"),
+    digits = 1
+  )
+```
+
+```{r}
+#| label: tbl-torontoo
+#| tbl-cap: Shelter usage in Toronto in 2022
+#| echo: false
+  clean_names(toronto_shelters_clean) |>
+  mutate(occupancy_month = month(
+    occupancy_date,
+    label = TRUE,
+    abbr = FALSE
+  )) |>
+  arrange(month(occupancy_date)) |> 
+  drop_na(occupied_rooms) |>
+  summarise(number_occupied = mean(occupied_rooms),
+            .by = occupancy_month) |>
+  kable(
+    col.names = c("Month", "Avg daily occupied rooms"),
+    digits = 1
+  )
+```
+
+```{r}
+#| label: fig-toronto
+#| fig-cap: Shelter usage in Toronto in 2022
+#| echo: false
+toronto_shelters_clean |>
+  mutate(occupancy_month = month(
+    occupancy_date,
+    label = TRUE,
+    abbr = FALSE
+  )) |>
+  arrange(month(occupancy_date)) |> 
+  drop_na(occupied_beds) |>
+  summarise(number_occupied = mean(occupied_beds),
+            .by = occupancy_month) |>
+ ggplot(aes(x=occupancy_month, y = number_occupied)) + geom_point()
+
+```
+
+
+```{r}
+#| label: fig-torontoo
+#| fig-cap: Shelter usage in Toronto in 2022
+#| echo: false
+toronto_shelters_clean |>
+  mutate(occupancy_month = month(
+    occupancy_date,
+    label = TRUE,
+    abbr = FALSE
+  )) |>
+  arrange(month(occupancy_date)) |> 
+  drop_na(occupied_rooms) |>
+  summarise(number_occupied = mean(occupied_rooms),
+            .by = occupancy_month) |>
+ ggplot(aes(x=occupancy_month, y = number_occupied)) + geom_point()
+```
+
+
+
+
+
+
+
+# Differennt shelters program model 
+
+The programmes that are provided in shelters have two different types: emergency mode and transitional mode, and both of these programmes have different ences. From the data set, it can have different sectors of people, such as men, women, youth, mixed-races, and families. After collecting the data, it can be seen the different needs of these people who are in the shelters. The youth have the most transitional needs, and the mixed-age population has the most emergency needs. Refers to the @fig-torontto. 
+
+```{r}
+#| label: fig-torontto
+#| fig-cap: Shelter usage in Toronto in 2022
+#| echo: false
+toronto_shelters_clean <-
+  clean_names(toronto_shelters_clean) |>
+  mutate(occupancy_date = ymd(occupancy_date)) |> 
+  select(occupancy_date, 
+         occupied_beds, 
+         capacity_funding_bed, 
+         capacity_funding_room, 
+         unavailable_rooms, 
+         occupied_rooms, 
+         location_city, 
+         sector, 
+         program_model, 
+         overnight_service_type, 
+         program_area, 
+         capacity_type)
+
+toronto_shelters_clean|>
+  ggplot(aes(x=sector,fill = program_model)) + 
+  geom_bar(position = "stack")
+
+```
+
+
+
+
+# Differennt type of service in shelters and capacity. 
+The different capacity types in shelters happen when people have different needs. Families prefer to have a room in shelters; mixed-age adults and youth prefer to have a bed in shelters. See @fig-tooronto. 
+
+
+
+```{r}
+#| label: fig-tooronto
+#| fig-cap: Shelter usage in Toronto in 2022
+#| echo: false
+toronto_shelters_clean <-
+  clean_names(toronto_shelters_clean) |>
+  mutate(occupancy_date = ymd(occupancy_date)) |> 
+  select(occupancy_date, 
+         occupied_beds, 
+         capacity_funding_bed, 
+         capacity_funding_room, 
+         unavailable_rooms, 
+         occupied_rooms, 
+         location_city, 
+         sector, 
+         program_model, 
+         overnight_service_type, 
+         program_area, 
+         capacity_type)
+
+toronto_shelters_clean|>
+  ggplot(aes(x=sector,fill = capacity_type)) + 
+  geom_bar(position = "stack")
+```
+
+
+
+# Differennt city in Toronto's shelters and capacity. 
+Using the city of Toronto as a case study, a comparison was made between five different cities to determine the extent of the capacity differences. Especially in the case of mixed adult shelters, the city of Toronto has the most needed beds in its shelters. There are fewer people in Vaughan, and the only people in Etobicoke who require the assistance of shelters are young people. See @fig-Toronto. 
+
+
+
+
+```{r}
+#| label: fig-Toronto
+#| fig-cap: Shelter usage in Toronto in 2022
+#| echo: false
+#| warning: false
+toronto_shelters_clean |>
+  ggplot(aes(x = location_city, y = occupied_beds, color = sector)) +
+  geom_point() +
+  theme_minimal() +
+  labs(x = "location_city", y = "occupied_beds", color = "Sector") +
+  scale_color_brewer(palette = "Set1") +
+  theme(legend.position = "bottom")
+```
+
+
+# Differennt city in Toronto's shelters and the relationship between the sector and program model
+
+The city of Toronto has the highest capacity of the audience for both the emergency programme and the transitional programme. Both of these programmes deal with emergency situations. See @fig-tOronto. 
+
+
+
+```{r}
+#| label: fig-tOronto
+#| fig-cap: Shelter usage in Toronto in 2022
+#| echo: false
+toronto_shelters_clean |>
+  ggplot(mapping = aes(x = location_city, fill = sector)) +
+  geom_bar() +
+  theme_linedraw() +
+  labs(x = "location_city",y = "num_occupied_beds",fill = "sector") +
+  facet_wrap(vars(program_model), scales = "free") +
+  guides(x = guide_axis(angle = 60)) +
+  theme(legend.position = "bottom") + 
+  scale_fill_viridis_d(option = "magma")
+```
+
+
+# reference
